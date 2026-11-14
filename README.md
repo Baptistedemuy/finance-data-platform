@@ -21,7 +21,11 @@ Built with production-grade practices — Infrastructure as Code, CI/CD, governa
 ## Roadmap
 
 - [x] **Foundations** — subscription guardrails (budgets, spending limit), region & compute decisions ([ADR-0001](docs/adr/0001-compute-platform-azure-databricks.md), [ADR-0002](docs/adr/0002-azure-region-switzerland-north.md))
-- [ ] **Platform & identity** — Terraform remote state, ADLS Gen2, Key Vault, Entra ID groups, Azure Policy, Databricks workspace, Unity Catalog
+- [ ] **Platform & identity** — in progress
+  - [x] Terraform remote state, Entra ID only ([ADR-0003](docs/adr/0003-terraform-remote-state.md))
+  - [x] Entra ID groups as code ([ADR-0004](docs/adr/0004-identity-entra-id-groups.md))
+  - [x] Dev ADLS Gen2 lake + Key Vault, rights per group ([ADR-0005](docs/adr/0005-dev-data-lake-and-key-vault.md))
+  - [ ] Databricks workspace, Unity Catalog, VS Code end-to-end access, Azure Policy
 - [ ] **Bronze ingestion** — public financial APIs → landing zone → Auto Loader
 - [ ] **Silver / gold** — Lakeflow pipelines, MERGE / SCD2, liquid clustering
 - [ ] **Governance** — data contracts, expectations, lineage
@@ -39,7 +43,11 @@ _Diagram coming with the platform phase._
 
 ```
 .
-├── infra/terraform/      # Infrastructure as Code (modules + envs)
+├── infra/terraform/      # Infrastructure as Code, one root module per lifecycle
+│   ├── bootstrap/        #   remote state backend (applied once)
+│   ├── identity/         #   Entra ID groups
+│   ├── envs/dev/         #   dev data lake + Key Vault
+│   └── modules/          #   reusable modules
 ├── resources/            # Databricks Asset Bundle resources (jobs, pipelines)
 ├── pipelines/            # Lakeflow pipeline definitions
 ├── contracts/            # Data contracts (YAML) — drive metadata-driven pipelines
