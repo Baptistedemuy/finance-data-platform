@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-11-07
+- Amended: 2026-11-15 (dedicated cloud-only admin account, see the last section)
 
 ## Context
 Until now every permission is assigned directly to a user (subscription Owner, Storage Blob Data
@@ -88,3 +89,38 @@ the membership of people changes often and is an identity process, not infrastru
 - Databricks: the groups will be made available in the workspace (identity federation / automatic
   identity management, availability to verify at the time of use) so Unity Catalog grants target the
   same groups.
+
+## Amendment (2026-11-15): dedicated cloud-only admin account
+
+### Context
+The daily account is a personal Microsoft account (MSA) invited into the tenant. It works with the
+Azure portal and the Azure CLI, which target the tenant explicitly, but the Azure Databricks account
+console signs users in through the `common` Entra ID endpoint: an MSA is then resolved to the
+consumer tenant ("Microsoft Services") and refused for the Azure Databricks application
+(Microsoft first-party application). A `tenant_id` parameter on the login URL is not honoured.
+Without access to the account console there is no Databricks account admin: no view of metastores,
+no account-level groups, no identity sync (step C, Unity Catalog).
+
+### Options considered
+1. Keep MSA accounts only: account-level Databricks administration impossible.
+2. **Dedicated cloud-only member account** (`adm-finplat@<tenant>.onmicrosoft.com`), used only for
+   directory and Databricks account administration; the MSA stays the daily account.
+3. Service principal as Databricks account admin from the start: the target for automation
+   (Terraform, phase 6), but a first human account admin is still needed to grant it.
+
+### Decision
+**Option 2**, then option 3 for automation later.
+- Created **manually in the portal** (documented exception to "everything in Terraform"): creating a
+  user in Terraform (`azuread_user`) stores its initial password in the state; credentials must
+  never pass through code, state or an assistant.
+- MFA enforced by Entra ID security defaults; password chosen by its owner at first sign-in.
+- Directory role **Global Administrator**, needed once to become the first Databricks account admin;
+  afterwards the Databricks *Account admin* role is kept and the directory role reduced if possible.
+- Not a member of the `grp-finplat-` groups: no data or Terraform rights, administration only.
+
+### Consequences
+- Two identities for one person: the admin account is used only in a separate browser profile or
+  private window, never for daily work.
+- Enterprise: separate admin accounts (often `adm-` prefixed, no mailbox), break-glass accounts
+  excluded from conditional access and monitored, privileged roles through PIM (Entra ID P2), and
+  Databricks account configuration by a service principal through Terraform.
