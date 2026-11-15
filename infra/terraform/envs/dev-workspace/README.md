@@ -4,6 +4,8 @@ The dev Azure Databricks workspace. **Ephemeral by design**: created at the star
 destroyed at the end. Data and secrets live in [`../dev`](../dev/) and survive it.
 Decision and alternatives: [ADR-0006](../../../../docs/adr/0006-dev-databricks-workspace.md)
 (and [ADR-0001](../../../../docs/adr/0001-compute-platform-azure-databricks.md) for the ephemeral principle).
+Region: **Sweden Central**, while the data stays in Switzerland North
+([ADR-0007](../../../../docs/adr/0007-dev-compute-region-sweden-central.md)).
 
 ## What it creates
 
@@ -61,12 +63,28 @@ Databricks account level.
 
 ## Cost
 
-Azure Retail Prices API, CHF, Switzerland North (2026-11-14):
+Azure Retail Prices API, CHF, Sweden Central (2026-11-15):
 
 - Workspace with no compute running: about 0 (a few cents/month for the workspace storage account).
-- Compute, billed only while a cluster runs: VM + DBU + public IP. Single-node `Standard_DS3_v2` all-purpose:
-  0.2484 (VM) + 0.75 × 0.4566 (DBU Premium) + 0.0042 (IP) ≈ **0.60 CHF/h**.
+- Compute, billed only while a cluster runs: VM + DBU + public IP. Single-node `Standard_D4as_v5` all-purpose:
+  0.1527 (VM) + DBU rate × 0.4566 (DBU Premium) + 0.0042 (IP); at 1 DBU/h ≈ **0.61 CHF/h**.
+- Photon is disabled by the cluster policy: it doubles the DBU rate.
+- Reading the lake in Switzerland North: inter-region transfer, a few cents per GB.
 - Avoided: NAT Gateway (0.0374 CHF/h + 0.0042 CHF/h for its IP, about 30 CHF/month fixed).
+
+## Troubleshooting
+
+- `SkuNotAvailable` when a cluster starts: the VM size is closed to the subscription in this region.
+  `az vm list-skus -l <region> --resource-type virtualMachines` lists only the sizes you may use
+  (add `--all` to see the restricted ones and their `reasonCode`). Quota and SKU access are different checks.
+- `terraform destroy` fails on `databricks_cluster_policy` with "cannot configure default credentials":
+  the `databricks` provider is configured from the workspace id, which is unknown when the workspace is
+  being replaced. The policy dies with the workspace, so `terraform state rm databricks_cluster_policy.single_node`
+  then destroy.
+- Re-creating the workspace (new region or after a failure): Databricks deletes the managed resource group
+  asynchronously and not always completely. Before `apply`, check `az databricks workspace list` (no `Failed`
+  workspace left: `az databricks workspace delete`) and `az group wait --deleted -n rg-finplat-dev-dbx-managed`.
+  A workspace re-created too quickly under the same name can fail with `RESOURCE_DOES_NOT_EXIST ... workers-vnet`.
 
 ## Enterprise differences
 

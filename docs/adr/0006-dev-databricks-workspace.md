@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-11-14
+- Amended by: [ADR-0007](0007-dev-compute-region-sweden-central.md) (workspace region: Sweden Central)
 
 ## Context
 ADR-0001 chose Azure Databricks (Premium, ephemeral, managed by Terraform) as the primary compute.
@@ -19,7 +20,12 @@ Cost facts (Azure Retail Prices API, CHF, Switzerland North, 2026-11-14):
 - Hidden fixed cost: with secure cluster connectivity (no public IP) on the default managed VNet,
   Azure Databricks creates a **NAT Gateway** + public IP in the managed resource group:
   0.0374 + 0.0042 CHF/h, about **30 CHF/month even with no cluster running**.
-- Subscription quota: 4 vCPU per region (ADR-0002) = one 4-vCPU node at a time.
+- Subscription quota: 4 vCPU per region (ADR-0002) = one 4-vCPU node at a time (spot / low priority: 3 vCPU,
+  so no 4-vCPU spot node).
+- Measured 2026-11-14/15: `Standard_D4ds_v5` and the other v5 4-vCPU sizes run at 1 DBU/h; Photon (on by default
+  on DBR 18 LTS) doubles the DBU rate. All 4-vCPU sizes are closed to this subscription in Switzerland North,
+  hence the workspace region in ADR-0007. Single-node `Standard_D4as_v5` all-purpose in Sweden Central:
+  0.1527 (VM) + 0.4566 (DBU) + 0.0042 (IP) ≈ **0.61 CHF/h**.
 
 ## Options considered
 Platform:
@@ -49,8 +55,8 @@ Network:
   data), created at the start of a work session and destroyed at the end. Resource group
   `rg-finplat-dev-dbx`, managed resource group `rg-finplat-dev-dbx-managed`, workspace
   `dbw-finplat-dev`.
-- **Guardrails** (later increments): cluster policy limited to single-node, small 4-vCPU VM types
-  and auto-termination of 15 minutes or less; scheduled work on jobs compute (about half the DBU
+- **Guardrails**: cluster policy `finplat-dev-single-node` (single node, allowlist of small 4-vCPU
+  VM types, Photon disabled, auto-termination of 15 minutes or less); later increments: scheduled work on jobs compute (about half the DBU
   price); budget alert reviewed; `terraform destroy` after each session.
 
 ## Consequences

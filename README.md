@@ -26,6 +26,7 @@ Built with production-grade practices — Infrastructure as Code, CI/CD, governa
   - [x] Entra ID groups as code ([ADR-0004](docs/adr/0004-identity-entra-id-groups.md))
   - [x] Dev ADLS Gen2 lake + Key Vault, rights per group ([ADR-0005](docs/adr/0005-dev-data-lake-and-key-vault.md))
   - [x] Ephemeral Databricks workspace, Premium, no NAT Gateway fixed cost ([ADR-0006](docs/adr/0006-dev-databricks-workspace.md))
+  - [x] Cost guardrail: single-node cluster policy; compute in Sweden Central, data in Switzerland North ([ADR-0007](docs/adr/0007-dev-compute-region-sweden-central.md))
   - [ ] Unity Catalog, VS Code end-to-end access, Azure Policy
 - [ ] **Bronze ingestion** — public financial APIs → landing zone → Auto Loader
 - [ ] **Silver / gold** — Lakeflow pipelines, MERGE / SCD2, liquid clustering

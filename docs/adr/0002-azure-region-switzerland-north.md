@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-11-04
+- Amended by: [ADR-0007](0007-dev-compute-region-sweden-central.md) (dev compute in Sweden Central, data unchanged)
 
 ## Context
 All Azure resources (ADLS Gen2, Key Vault, Azure Databricks workspace, Unity Catalog metastore) must live

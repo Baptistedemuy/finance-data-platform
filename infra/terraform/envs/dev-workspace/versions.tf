@@ -6,5 +6,9 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.81"
     }
+    databricks = {
+      source  = "databricks/databricks"
+      version = "~> 1.142"
+    }
   }
 }
