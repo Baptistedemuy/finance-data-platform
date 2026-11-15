@@ -106,3 +106,37 @@ resource "azurerm_key_vault" "main" {
   soft_delete_retention_days = 7
   purge_protection_enabled   = false
 }
+
+# 6. Access connector for Azure Databricks (ADR-0008): the identity Unity Catalog uses to reach the lake.
+#    Persistent, next to the lake: the UC storage credential (metastore, persistent) references its resource id.
+#    Same region as the storage account (Microsoft guidance), even though the workspace runs in Sweden Central.
+resource "azurerm_databricks_access_connector" "unity_catalog" {
+  name                = var.access_connector_name
+  resource_group_name = azurerm_resource_group.data.name
+  location            = azurerm_resource_group.data.location
+  tags                = merge(var.tags, { component = "governance" })
+
+  identity {
+    type = "SystemAssigned" # Entra ID identity created and deleted with the connector, no secret
+  }
+}
+
+# Least privilege (ADR-0008, option b):
+# - Storage Blob Delegator on the account: lets UC sign short-lived user delegation SAS tokens
+#   (credential vending to clusters); grants no data access by itself.
+resource "azurerm_role_assignment" "connector_blob_delegator" {
+  scope                = azurerm_storage_account.lake.id
+  role_definition_name = "Storage Blob Delegator"
+  principal_id         = azurerm_databricks_access_connector.unity_catalog.identity[0].principal_id
+  principal_type       = "ServicePrincipal" # a managed identity is a service principal in Entra ID
+}
+
+# - Storage Blob Data Contributor on the layer containers only, not on the whole account.
+resource "azurerm_role_assignment" "connector_blob_contributor" {
+  for_each = azurerm_storage_container.layer
+
+  scope                = each.value.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azurerm_databricks_access_connector.unity_catalog.identity[0].principal_id
+  principal_type       = "ServicePrincipal"
+}

@@ -33,6 +33,12 @@ variable "key_vault_name" {
   }
 }
 
+variable "access_connector_name" {
+  description = "Access connector for Azure Databricks used by Unity Catalog to reach the lake (ADR-0008)."
+  type        = string
+  default     = "dbac-finplat-dev"
+}
+
 variable "lake_layers" {
   description = "Containers of the data lake, one per medallion layer (ADR-0005)."
   type        = set(string)

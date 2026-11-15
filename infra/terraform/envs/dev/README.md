@@ -14,6 +14,7 @@ Decision and alternatives: [ADR-0005](../../../docs/adr/0005-dev-data-lake-and-k
 | Containers | `landing`, `bronze`, `silver`, `gold` | One filesystem per medallion layer |
 | Role assignments | Storage Blob Data Contributor / Reader | Data-plane rights for the [identity](../../identity/) groups, per container |
 | Key Vault | `kv-finplat-dev` | Standard SKU, Azure RBAC authorization |
+| Access connector | `dbac-finplat-dev` | System-assigned managed identity used by Unity Catalog to reach the lake ([ADR-0008](../../../../docs/adr/0008-unity-catalog-storage-access-and-lifecycles.md)) |
 
 Rights (granted to groups, looked up by name with `data "azuread_group"`):
 
@@ -22,6 +23,7 @@ Rights (granted to groups, looked up by name with `data "azuread_group"`):
 | `grp-finplat-platform-admins` | none on data (control plane only) | planned: Key Vault Secrets Officer |
 | `grp-finplat-data-engineers` | Storage Blob Data Contributor on each container | planned: Key Vault Secrets User |
 | `grp-finplat-data-readers` | Storage Blob Data Reader on `gold` only | none |
+| `dbac-finplat-dev` (Unity Catalog) | Storage Blob Delegator on the account (user delegation SAS, no data access) + Storage Blob Data Contributor on each container | none |
 
 Key Vault roles are added with the first secret (ingestion phase).
 
