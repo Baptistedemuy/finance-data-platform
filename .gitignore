@@ -16,6 +16,9 @@ venv/
 *.tfstate.*
 *.tfvars
 !*.tfvars.example
+# Saved plans (terraform plan -out) embed variable values and state data
+tfplan
+*.tfplan
 .terraform.lock.hcl.bak
 
 # Secrets

@@ -27,7 +27,8 @@ Built with production-grade practices — Infrastructure as Code, CI/CD, governa
   - [x] Dev ADLS Gen2 lake + Key Vault, rights per group ([ADR-0005](docs/adr/0005-dev-data-lake-and-key-vault.md))
   - [x] Ephemeral Databricks workspace, Premium, no NAT Gateway fixed cost ([ADR-0006](docs/adr/0006-dev-databricks-workspace.md))
   - [x] Cost guardrail: single-node cluster policy; compute in Sweden Central, data in Switzerland North ([ADR-0007](docs/adr/0007-dev-compute-region-sweden-central.md))
-  - [ ] Unity Catalog, VS Code end-to-end access, Azure Policy
+  - [x] Unity Catalog storage access: managed-identity access connector, storage credential, external locations ([ADR-0008](docs/adr/0008-unity-catalog-storage-access-and-lifecycles.md))
+  - [ ] Unity Catalog catalog / schemas / grants, VS Code end-to-end access, Azure Policy
 - [ ] **Bronze ingestion** — public financial APIs → landing zone → Auto Loader
 - [ ] **Silver / gold** — Lakeflow pipelines, MERGE / SCD2, liquid clustering
 - [ ] **Governance** — data contracts, expectations, lineage
@@ -48,7 +49,8 @@ _Diagram coming with the platform phase._
 ├── infra/terraform/      # Infrastructure as Code, one root module per lifecycle
 │   ├── bootstrap/        #   remote state backend (applied once)
 │   ├── identity/         #   Entra ID groups
-│   ├── envs/dev/         #   dev data lake + Key Vault (persistent)
+│   ├── envs/dev/         #   dev data lake + Key Vault + UC access connector (persistent)
+│   ├── envs/dev-catalog/ #   Unity Catalog objects on the dev lake (persistent)
 │   ├── envs/dev-workspace/ # dev Databricks workspace (ephemeral)
 │   └── modules/          #   reusable modules
 ├── resources/            # Databricks Asset Bundle resources (jobs, pipelines)
