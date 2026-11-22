@@ -49,6 +49,15 @@ terraform output workspace_url
 terraform destroy                  # end of session: removes both resource groups
 ```
 
+The managed resource group can survive the destroy with Unity Catalog leftovers (workspace storage account
+and access connector), outside the Terraform state. [`scripts/dev-session-end.sh`](../../../../scripts/dev-session-end.sh)
+runs the destroy, deletes those leftovers only once the workspace is gone, waits for the deletion and prints
+what is left:
+
+```bash
+../../../../scripts/dev-session-end.sh        # add --yes to skip the Terraform prompt
+```
+
 Verify that no NAT Gateway was created and that secure cluster connectivity is off:
 
 ```bash
