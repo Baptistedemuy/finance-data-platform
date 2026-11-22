@@ -46,6 +46,9 @@ cd ../dev-catalog  && terraform plan            # 2. expect "No changes" once cr
 cd ../dev-workspace && terraform destroy        # 3. destroy the workspace only, never this module
 ```
 
+Steps 1-2 are scripted in [`scripts/dev-session-start.sh`](../../../../scripts/dev-session-start.sh), step 3 (plus the
+managed resource group cleanup) in [`scripts/dev-session-end.sh`](../../../../scripts/dev-session-end.sh).
+
 ## Prerequisites
 
 - Terraform >= 1.9, Azure CLI, `az login` with:

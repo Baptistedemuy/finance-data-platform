@@ -58,6 +58,14 @@ what is left:
 ../../../../scripts/dev-session-end.sh        # add --yes to skip the Terraform prompt
 ```
 
+Its counterpart [`scripts/dev-session-start.sh`](../../../../scripts/dev-session-start.sh) checks that no `Failed`
+workspace or half-deleted managed resource group is left, plans and applies this module from a saved plan, then
+checks that [`../dev-catalog`](../dev-catalog/) reports no changes:
+
+```bash
+../../../../scripts/dev-session-start.sh      # add --yes to apply without asking
+```
+
 Verify that no NAT Gateway was created and that secure cluster connectivity is off:
 
 ```bash
